@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CreateOrder from "./CreateOrder";
 
 export default function Home() {
   const [enteredFirstPrompt, setEnteredFirstPrompt] = useState(false);
@@ -25,13 +26,19 @@ export default function Home() {
   const [promptEnteredByUser, setPromptEnteredByUser] = useState<string>("");
   const [previousPrompt, setPreviousPrompt] = useState<string>("");
   const [revisedPrompt, setRevisedPrompt] = useState<string>("");
+  const [testing, setTesting] = useState<boolean>(true);
 
   const handleCreateImage = async () => {
     setLoading(true);
     setEnteredFirstPrompt(true);
 
-    // try {
-    const resultAll = await handleFetchDalleCreate();
+    let resultAll;
+    if (testing) {
+      resultAll = await mockFetchDalle();
+    }
+    else {
+      resultAll = await handleFetchDalleCreate();
+    }
     const revisedPrompt = resultAll.revised_prompt;
     setRevisedPrompt(revisedPrompt);
 
@@ -44,6 +51,7 @@ export default function Home() {
       const blob = new Blob([Buffer.from(b64_json, "base64")], {
         type: "image/png",
       });
+      // console.log(URL.createObjectURL(blob));
       setBlobImage(URL.createObjectURL(blob));
     } else {
       console.log("No image data received");
@@ -96,7 +104,7 @@ export default function Home() {
 
       // Mock response data with base64 encoded JSON containing a PNG image URL
       const mockImageUrl =
-        "https://img-c.udemycdn.com/user/200_H/24036764_d125_11.png"; // Assuming .png extension
+        "https://png.pngtree.com/png-vector/20220901/ourlarge/pngtree-pirate-ship-on-the-shore-square-frame-corsair-naval-cutout-vector-png-image_9202584.jpg"; // Assuming .png extension
       const mockJsonData = JSON.stringify({ url: mockImageUrl });
       const mockB64Data = Buffer.from(mockJsonData).toString("base64"); // Encode to base64
 
@@ -107,7 +115,7 @@ export default function Home() {
           },
         ],
       };
-
+      setBlobImage("blob:http://localhost:3000/4d485a30-f884-4618-8cde-c3ac5e82763e")
       console.log("mockData.data", mockData.data);
 
       return mockData.data;
@@ -119,6 +127,8 @@ export default function Home() {
   const finalizeTheImage = async () => {
     setLoading(true);
     setFinalImageIsCreated(true);
+    // upload the image to AWS S3 bucket
+
     setLoading(false);
   };
 
@@ -169,7 +179,7 @@ export default function Home() {
         height: "100vh",
       }}
     >
-      {!loading && !enteredFirstPrompt && (
+      {!loading && !enteredFirstPrompt  && !testing && (
         <div style={{ margin: "auto" }}>
           <Typography>Enter a prompt</Typography>
           <div
@@ -260,10 +270,13 @@ export default function Home() {
           <CircularProgress />
         </div>
       )}
-      {!loading && finalImageIsCreated && (
-        <Typography>
-          Here a user will be able to put it on a shirt or a mug
-        </Typography>
+      {!loading && 
+      // finalImageIsCreated &&
+      testing &&
+      (
+        <div style={{height: '1000px', width: "-webkit-fill-available", borderStyle: "solid", borderWidth: "2px", borderColor: "black"}}>
+          <CreateOrder />
+        </div>
       )}
       {!loading && continueEditing && (
         <>
